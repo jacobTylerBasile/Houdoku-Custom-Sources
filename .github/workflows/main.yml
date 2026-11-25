@@ -1,0 +1,40 @@
+name: Build macOS DMG
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers when you push a version tag, or change to 'branches: [ main ]'
+
+jobs:
+  build-dmg:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. Add your app build steps here (e.g., xcodebuild, npm run build, cargo build, etc.)
+      # Ensure your compiled .app bundle ends up in a folder, e.g., ./build/MyApp.app
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Package DMG
+        run: |
+          mkdir -p dist
+          create-dmg \
+            --volname "MyApp Installer" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --icon "MyApp.app" 200 190 \
+            --hide-extension "MyApp.app" \
+            --app-drop-link 600 185 \
+            "dist/MyApp.dmg" \
+            "build/MyApp.app"
+
+      - name: Upload DMG Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyApp-macOS-DMG
+          path: dist/MyApp.dmg
